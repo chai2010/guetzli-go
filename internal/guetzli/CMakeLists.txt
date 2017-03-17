@@ -57,11 +57,28 @@ install(TARGETS guetzlilib
 
 add_executable(guetzlihello
 	./hello.cc
-	./lodepng.cpp
+	./png/lodepng.cpp
 
 	${GUETZLI_SRC}
 )
 install(TARGETS guetzlihello
+  RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}
+  LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}
+  ARCHIVE DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+#------------------------------------------------------------------------------
+
+add_executable(guetzlitest
+	./test.cc
+	./test_util.cc
+	./test_util_jpg.cc
+	./test_util_png.cc
+	./bench_test.cc
+
+	${GUETZLI_SRC}
+)
+install(TARGETS guetzlitest
   RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}
   LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}
   ARCHIVE DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}

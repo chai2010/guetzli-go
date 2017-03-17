@@ -3,7 +3,9 @@ zz_build_*
 
 guetzli.lib
 guetzlihello.exe
+
 guetzlihello
+guetzlitest
 
 a.out
 a.out.jpg
