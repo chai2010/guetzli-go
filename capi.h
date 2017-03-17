@@ -15,7 +15,7 @@ extern "C" {
 typedef struct guetzli_string_t guetzli_string_t;
 
 guetzli_string_t* guetzli_string_new(int size);
-void guetzli_data_delete(guetzli_string_t* p);
+void guetzli_string_delete(guetzli_string_t* p);
 
 void guetzli_string_resize(guetzli_string_t* p, int size);
 int guetzli_string_size(guetzli_string_t* p);

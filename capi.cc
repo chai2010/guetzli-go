@@ -21,7 +21,7 @@ guetzli_string_t* guetzli_string_new(int size) {
 	p->str_.resize(size);
 	return p;
 }
-void guetzli_data_delete(guetzli_string_t* p) {
+void guetzli_string_delete(guetzli_string_t* p) {
 	delete p;
 }
 
@@ -88,7 +88,7 @@ static guetzli_string_t* encodeRGB(const std::vector<uint8_t>& rgb, int w, int h
 
 	auto p = guetzli_string_new(0);
 	if(!guetzli::Process(params, &stats, rgb, w, h, &p->str_)) {
-		guetzli_data_delete(p);
+		guetzli_string_delete(p);
 		return NULL;
 	}
 	return p;
