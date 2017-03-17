@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <string>
 #include <vector>
@@ -77,10 +78,14 @@ int main() {
 	rgb.assign((uint8_t*)img, (uint8_t*)(img+w*h*3));
 	free(img);
 
+	clock_t startTime = clock();
 	if(!guetzli::Process(params, &stats, rgb, w, h, &out_data)) {
 		fprintf(stderr, "Guetzli processing failed\n");
 		return 1;
 	}
+
+	double duration = (clock() - startTime) / (double) CLOCKS_PER_SEC;
+	printf("duration: %.2fs\n", duration); // 5s
 
 	FILE* fout = fopen("a.out.jpg", "wb");
 	if(!fout) {
