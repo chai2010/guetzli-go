@@ -3,6 +3,9 @@
 # license that can be found in the LICENSE file.
 
 project(GUETZLI)
+cmake_minimum_required(VERSION 3.5)
+
+set(CMAKE_CXX_STANDARD 11)
 
 #------------------------------------------------------------------------------
 

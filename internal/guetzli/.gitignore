@@ -1,6 +1,13 @@
+build
 zz_build_*
 
 guetzli.lib
 guetzlihello.exe
+guetzlihello
 
+a.out
 a.out.jpg
+
+*.a
+*.lib
+*.exe
