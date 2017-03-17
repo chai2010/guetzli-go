@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include "./lodepng.h"
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -52,7 +54,7 @@ int main() {
 	params.butteraugli_target = guetzli::ButteraugliScoreForQuality(95);
 	guetzli::ProcessStats stats;
 
-	FILE* fin = fopen("./testdata/lena.jpg", "rb");
+	FILE* fin = fopen("./testdata/video-001.png", "rb");
 	if (!fin) {
 		fprintf(stderr, "Can't open input file\n");
 		return 1;
@@ -61,13 +63,26 @@ int main() {
 	std::string in_data = ReadFileOrDie(fin);
 	std::string out_data;
 
-	if (!guetzli::Process(params, &stats, in_data, &out_data)) {
+	unsigned char* img;
+	unsigned w, h;
+
+	auto err = lodepng_decode24(&img, &w, &h, (const unsigned char*)in_data.data(), in_data.size());
+	if(err != 0) {
+		fprintf(stderr, "lodepng_decode24 failed\n");
+		return 1;
+	}
+
+	std::vector<uint8_t> rgb;
+	rgb.assign((uint8_t*)img, (uint8_t*)(img+w*h*3));
+	free(img);
+
+	if(!guetzli::Process(params, &stats, rgb, w, h, &out_data)) {
 		fprintf(stderr, "Guetzli processing failed\n");
 		return 1;
 	}
 
 	FILE* fout = fopen("a.out.jpg", "wb");
-	if (!fout) {
+	if(!fout) {
 		fprintf(stderr, "Can't open output file for writing\n");
 		return 1;
 	}

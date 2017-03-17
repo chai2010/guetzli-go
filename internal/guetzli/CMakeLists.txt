@@ -54,6 +54,7 @@ install(TARGETS guetzlilib
 
 add_executable(guetzlihello
 	./hello.cc
+	./lodepng.cpp
 
 	${GUETZLI_SRC}
 )
