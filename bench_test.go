@@ -45,7 +45,7 @@ func BenchmarkEncode_jpeg_quality_95(b *testing.B) {
 		_ = buf.Bytes()
 	}
 }
-func BenchmarkEncode_png_quality_95(b *testing.B) {
+func BenchmarkEncode_png(b *testing.B) {
 	m, err := loadImage("./testdata/video-001.png")
 	if err != nil {
 		b.Fatal(err)

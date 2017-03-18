@@ -13,6 +13,18 @@ and then run these commands:
 2. `go run hello.go`
 
 
+Benchmark
+=========
+
+```
+go test -test.bench=.*
+BenchmarkEncode_guetzli_quality_95-4   	       1	1043846782 ns/op
+BenchmarkEncode_jpeg_quality_95-4      	    2000	   1130081 ns/op
+BenchmarkEncode_png-4                  	     200	   6423543 ns/op
+PASS
+ok  	github.com/chai2010/guetzli-go	5.817s
+```
+
 Example
 =======
 
