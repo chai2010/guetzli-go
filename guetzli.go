@@ -29,7 +29,7 @@ type MemP interface {
 	Bounds() image.Rectangle
 	Channels() int
 	DataType() reflect.Kind
-	Pix() []byte // PixSilce type
+	Pix() []byte // PixSlice type
 
 	// Stride is the Pix stride (in bytes, must align with SizeofKind(p.DataType))
 	// between vertically adjacent pixels.
