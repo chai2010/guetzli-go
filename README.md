@@ -1,6 +1,7 @@
 # [Guetzli](https://github.com/google/guetzli) perceptual JPEG encoder for Go
 
-[![GoDoc](https://godoc.org/github.com/chai2010/guetzli-go?status.svg)](https://godoc.org/github.com/chai2010/guetzli-go)
+- `guetzli-go`(package): [![GoDoc](https://godoc.org/github.com/chai2010/guetzli-go?status.svg)](https://godoc.org/github.com/chai2010/guetzli-go)
+- `guetzli`(command): [![GoDoc](https://godoc.org/github.com/chai2010/guetzli-go/apps/guetzli?status.svg)](https://godoc.org/github.com/chai2010/guetzli-go/apps/guetzli)
 
 
 Install
@@ -11,6 +12,33 @@ and then run these commands:
 
 1. `go get github.com/chai2010/guetzli-go`
 2. `go run hello.go`
+
+
+[Command](apps/guetzli/main.go)
+===============================
+
+```
+Guetzli JPEG compressor
+
+Usage:
+
+    guetzli [flags] input_filename output_filename
+
+      -quality float
+            Expressed as a JPEG quality value. (default 95)
+      -version
+            Show version and exit.
+
+Example:
+
+    guetzli [-quality=95] original.png output.jpg
+    guetzli [-quality=95] original.jpg output.jpg
+
+See https://godoc.org/github.com/chai2010/guetzli-go See
+https://github.com/google/guetzli
+
+Report bugs to <chaishushan{AT}gmail.com>.
+```
 
 
 Benchmark
