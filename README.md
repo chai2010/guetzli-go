@@ -11,7 +11,9 @@ Install `GCC` or `MinGW` ([download here](http://tdm-gcc.tdragon.net/download)) 
 and then run these commands:
 
 1. `go get github.com/chai2010/guetzli-go`
-2. `go run hello.go`
+1. `go get github.com/chai2010/guetzli-go/apps/guetzli`
+1. `go run hello.go`
+1. `guetzli -h`
 
 
 [Command](apps/guetzli/main.go)
