@@ -11,6 +11,7 @@ import (
 	"image"
 	"image/color"
 	"io"
+	"os"
 	"reflect"
 )
 
@@ -64,6 +65,15 @@ func Encode(w io.Writer, m image.Image, o *Options) error {
 		return err
 	}
 	return nil
+}
+
+func Save(name string, m image.Image, o *Options) error {
+	f, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return Encode(f, m, o)
 }
 
 func encodeImage(m image.Image, quality float32) (data []byte, ok bool) {
