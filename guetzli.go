@@ -11,15 +11,33 @@ import (
 	"image"
 	"image/color"
 	"io"
+	"reflect"
 )
 
 const DefaultQuality = 75
+
+var errEncodeFailed = errors.New("guetzli: encode failed!")
 
 type Options struct {
 	Quality float32
 }
 
-var errEncodeFailed = errors.New("guetzli: encode failed!")
+// MemP Image Spec (Native Endian), see https://github.com/chai2010/image.
+type MemP interface {
+	MemPMagic() string
+	Bounds() image.Rectangle
+	Channels() int
+	DataType() reflect.Kind
+	Pix() []byte // PixSilce type
+
+	// Stride is the Pix stride (in bytes, must align with SizeofKind(p.DataType))
+	// between vertically adjacent pixels.
+	Stride() int
+}
+
+func EncodeImage(m image.Image, quality float32) (data []byte, ok bool) {
+	return encodeImage(m, quality)
+}
 
 func EncodeGray(m *image.Gray, quality float32) (data []byte, ok bool) {
 	return encodeGray(m.Pix, m.Bounds().Dx(), m.Bounds().Dy(), m.Stride, quality)
@@ -37,39 +55,37 @@ func Encode(w io.Writer, m image.Image, o *Options) error {
 		quality = o.Quality
 	}
 
-	data, err := encode(m, quality)
-	if err != nil {
-		return err
+	data, ok := encodeImage(m, quality)
+	if !ok {
+		return errEncodeFailed
 	}
-	_, err = io.Copy(w, bytes.NewReader(data))
+	_, err := io.Copy(w, bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func encode(m image.Image, quality float32) (data []byte, err error) {
+func encodeImage(m image.Image, quality float32) (data []byte, ok bool) {
 	b := m.Bounds()
+	if memp, ok := m.(MemP); ok {
+		switch {
+		case memp.Channels() == 1 && memp.DataType() == reflect.Uint8:
+			return encodeGray(memp.Pix(), b.Dx(), b.Dy(), memp.Stride(), quality)
+		case memp.Channels() == 3 && memp.DataType() == reflect.Uint8:
+			return encodeRGB(memp.Pix(), b.Dx(), b.Dy(), memp.Stride(), quality)
+		case memp.Channels() == 4 && memp.DataType() == reflect.Uint8:
+			return encodeRGBA(memp.Pix(), b.Dx(), b.Dy(), memp.Stride(), quality)
+		}
+	}
 	switch m := m.(type) {
 	case *image.Gray:
-		data, ok := encodeGray(m.Pix, b.Dx(), b.Dy(), m.Stride, quality)
-		if !ok {
-			return nil, errEncodeFailed
-		}
-		return data, nil
+		return encodeGray(m.Pix, b.Dx(), b.Dy(), m.Stride, quality)
 	case *image.RGBA:
-		data, ok := encodeRGBA(m.Pix, b.Dx(), b.Dy(), m.Stride, quality)
-		if !ok {
-			return nil, errEncodeFailed
-		}
-		return data, nil
+		return encodeRGBA(m.Pix, b.Dx(), b.Dy(), m.Stride, quality)
 	default:
 		rgba := toRGBAImage(m)
-		data, ok := encodeRGBA(rgba.Pix, b.Dx(), b.Dy(), rgba.Stride, quality)
-		if !ok {
-			return nil, errEncodeFailed
-		}
-		return data, nil
+		return encodeRGBA(rgba.Pix, b.Dx(), b.Dy(), rgba.Stride, quality)
 	}
 }
 
