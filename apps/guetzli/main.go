@@ -7,6 +7,7 @@
 // Usage:
 //
 //	guetzli [flags] input_filename output_filename
+//	guetzli [flags] input_dir output_dir [ext...]
 //
 //	  -quality float
 //	        Expressed as a JPEG quality value. (default 95)
@@ -18,7 +19,14 @@
 //	guetzli [-quality=95] original.png output.jpg
 //	guetzli [-quality=95] original.jpg output.jpg
 //
+//	guetzli [-quality=95] input_dir output_dir .png
+//	guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
+//	guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
+//
+// Note: Input image only support jpeg/png format.
+//
 // See https://godoc.org/github.com/chai2010/guetzli-go
+//
 // See https://github.com/google/guetzli
 //
 // Report bugs to <chaishushan{AT}gmail.com>.
@@ -33,6 +41,9 @@ import (
 	_ "image/png"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/chai2010/guetzli-go"
 )
@@ -41,6 +52,7 @@ const Version = "1.0"
 
 var (
 	flagQuality = flag.Float64("quality", 95, "Expressed as a JPEG quality value.")
+	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
 	flagVersion = flag.Bool("version", false, "Show version and exit.")
 )
 
@@ -49,6 +61,7 @@ func init() {
 		fmt.Fprintln(os.Stderr, `Guetzli JPEG compressor.
 
 Usage: guetzli [flags] input_filename output_filename
+       guetzli [flags] input_dir output_dir [ext...]
 `)
 		flag.PrintDefaults()
 		fmt.Println(`
@@ -56,6 +69,12 @@ Example:
 
   guetzli [-quality=95] original.png output.jpg
   guetzli [-quality=95] original.jpg output.jpg
+
+  guetzli [-quality=95] input_dir output_dir .png
+  guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
+  guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
+
+Note: Input image only support jpeg/png format.
 
 See https://godoc.org/github.com/chai2010/guetzli-go
 See https://github.com/google/guetzli
@@ -72,29 +91,111 @@ func main() {
 		os.Exit(0)
 	}
 
-	if flag.NArg() != 2 {
+	if flag.NArg() < 2 {
 		fmt.Printf("guetzli-%s\n", Version)
 		os.Exit(0)
 	}
 
 	var (
-		inputFilename  = flag.Arg(0)
-		outputFilename = flag.Arg(1)
+		inputPath  = flag.Arg(0)
+		outputPath = flag.Arg(1)
+		inputDir   = flag.Arg(0)
+		outputDir  = flag.Arg(1)
+		extList    = flag.Args()[2:]
 	)
 
+	// only for one image
+	if !isDir(inputPath) {
+		err := guetzliCompressImage(inputPath, outputPath, float32(*flagQuality))
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	// walk dir
+	filepath.Walk(inputDir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
+		if !matchExtList(path, ".png", ".jpg", ".jpeg") {
+			return nil // support format
+		}
+		if !matchExtList(path, extList...) {
+			return nil // selected format
+		}
+
+		outputPath := func() string {
+			relPath, err := filepath.Rel(inputDir, path)
+			if err != nil {
+				log.Printf("%s is invalid path, skiped", path)
+			}
+			newpath := filepath.Join(outputDir, relPath)
+			if !matchExtList(newpath, ".jpg", ".jpeg") {
+				newpath += ".jpg"
+			}
+			return newpath
+		}()
+
+		os.MkdirAll(filepath.Dir(outputPath), 0777)
+		timeUsed, err := func() (time.Duration, error) {
+			s := time.Now()
+			err := guetzliCompressImage(path, outputPath, float32(*flagQuality))
+			timeUsed := time.Now().Sub(s)
+			return timeUsed, err
+		}()
+		if err != nil {
+			log.Printf("%s filed, err = %v\n", path, err)
+			return nil
+		}
+
+		fmt.Println(path, "ok,", timeUsed)
+		return nil
+	})
+
+}
+
+func matchExtList(name string, extList ...string) bool {
+	if len(extList) == 0 {
+		return true
+	}
+	ext := filepath.Ext(name)
+	for _, s := range extList {
+		if strings.EqualFold(s, ext) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func guetzliCompressImage(inputFilename, outputFilename string, quality float32) error {
 	fin, err := os.Open(inputFilename)
 	if err != nil {
-		log.Fatalf("open %q failed, err = %v", inputFilename, err)
+		return fmt.Errorf("open %q failed, err = %v", inputFilename, err)
 	}
 	defer fin.Close()
 
 	m, _, err := image.Decode(fin)
 	if err != nil {
-		log.Fatalf("decode %q failed, err = %v", inputFilename, err)
+		return fmt.Errorf("decode %q failed, err = %v", inputFilename, err)
 	}
 
-	err = guetzli.Save(outputFilename, m, &guetzli.Options{Quality: float32(*flagQuality)})
+	err = guetzli.Save(outputFilename, m, &guetzli.Options{Quality: quality})
 	if err != nil {
-		log.Fatalf("save %q failed, err = %v", outputFilename, err)
+		return fmt.Errorf("save %q failed, err = %v", outputFilename, err)
 	}
+	return nil
+}
+
+func isDir(path string) bool {
+	fi, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	if fi.IsDir() {
+		return true
+	}
+	return false
 }

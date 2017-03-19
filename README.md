@@ -25,9 +25,12 @@ Guetzli JPEG compressor
 Usage:
 
     guetzli [flags] input_filename output_filename
+    guetzli [flags] input_dir output_dir [ext...]
 
       -quality float
             Expressed as a JPEG quality value. (default 95)
+      -regexp string
+            regexp for base filename.
       -version
             Show version and exit.
 
@@ -35,6 +38,12 @@ Example:
 
     guetzli [-quality=95] original.png output.jpg
     guetzli [-quality=95] original.jpg output.jpg
+
+    guetzli [-quality=95] input_dir output_dir .png
+    guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
+    guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
+
+Note: Input image only support jpeg/png format.
 
 See https://godoc.org/github.com/chai2010/guetzli-go See
 https://github.com/google/guetzli
