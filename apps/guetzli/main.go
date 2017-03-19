@@ -63,7 +63,7 @@ import (
 const Version = "1.0"
 
 var (
-	flagQuality = flag.Float64("quality", 95, "Expressed as a JPEG quality value.")
+	flagQuality = flag.Float64("quality", 75, "Expressed as a JPEG quality value.")
 	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
 	flagVersion = flag.Bool("version", false, "Show version and exit.")
 )
