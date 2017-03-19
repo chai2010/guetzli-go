@@ -16,8 +16,8 @@ and then run these commands:
 1. `guetzli -h`
 
 
-[Command](apps/guetzli/main.go)
-===============================
+Command: [guetzli](apps/guetzli/main.go)
+========================================
 
 ```
 Guetzli JPEG compressor
@@ -43,7 +43,9 @@ Example:
     guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
     guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 
-Note: Default image only support jpeg/png format.
+Note: Default image ext is: .jpeg .jpg .png
+
+Note: Supported formats: .gif, .jpeg, .jpg, .png
 
 See https://godoc.org/github.com/chai2010/guetzli-go See
 https://github.com/google/guetzli

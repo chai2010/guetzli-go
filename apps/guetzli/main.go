@@ -25,7 +25,9 @@
 //	guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
 //	guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 //
-// Note: Default image only support jpeg/png format.
+// Note: Default image ext is: .jpeg .jpg .png
+//
+// Note: Supported formats: .gif, .jpeg, .jpg, .png
 //
 // See https://godoc.org/github.com/chai2010/guetzli-go
 //
@@ -46,6 +48,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -54,6 +57,12 @@ import (
 
 const Version = "1.0"
 
+var (
+	flagQuality = flag.Float64("quality", 95, "Expressed as a JPEG quality value.")
+	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
+	flagVersion = flag.Bool("version", false, "Show version and exit.")
+)
+
 var supportFormatExtList = []string{
 	".png",
 	".jpg",
@@ -61,11 +70,9 @@ var supportFormatExtList = []string{
 	".gif",
 }
 
-var (
-	flagQuality = flag.Float64("quality", 95, "Expressed as a JPEG quality value.")
-	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
-	flagVersion = flag.Bool("version", false, "Show version and exit.")
-)
+func init() {
+	sort.Strings(supportFormatExtList)
+}
 
 func init() {
 	flag.Usage = func() {
@@ -75,7 +82,7 @@ Usage: guetzli [flags] input_filename output_filename
        guetzli [flags] input_dir output_dir [ext...]
 `)
 		flag.PrintDefaults()
-		fmt.Println(`
+		fmt.Printf(`
 Example:
 
   guetzli [-quality=95] original.png output.jpg
@@ -85,15 +92,18 @@ Example:
   guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
   guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 
-Note: Default image only support jpeg/png format.
+Note: Default image ext is: .jpeg .jpg .png
+
+Note: Supported formats: %s
 
 See https://godoc.org/github.com/chai2010/guetzli-go
 See https://github.com/google/guetzli
 
 Report bugs to <chaishushan{AT}gmail.com>.
-`)
+`, strings.Join(supportFormatExtList, ", "))
 	}
 }
+
 func main() {
 	flag.Parse()
 
@@ -117,7 +127,7 @@ func main() {
 
 	// default ext is only for jpg and png
 	if len(extList) == 0 {
-		extList = []string{".jpg", ".png"}
+		extList = []string{".jpg", ".jpeg", ".png"}
 	}
 
 	// only for one image
