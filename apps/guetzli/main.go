@@ -11,6 +11,8 @@
 //
 //	  -quality float
 //	        Expressed as a JPEG quality value. (default 95)
+//	  -regexp string
+//	        regexp for base filename.
 //	  -version
 //	        Show version and exit.
 //
@@ -23,7 +25,7 @@
 //	guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
 //	guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 //
-// Note: Input image only support jpeg/png format.
+// Note: Default image only support jpeg/png format.
 //
 // See https://godoc.org/github.com/chai2010/guetzli-go
 //
@@ -37,11 +39,13 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -49,6 +53,13 @@ import (
 )
 
 const Version = "1.0"
+
+var supportFormatExtList = []string{
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+}
 
 var (
 	flagQuality = flag.Float64("quality", 95, "Expressed as a JPEG quality value.")
@@ -74,7 +85,7 @@ Example:
   guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
   guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 
-Note: Input image only support jpeg/png format.
+Note: Default image only support jpeg/png format.
 
 See https://godoc.org/github.com/chai2010/guetzli-go
 See https://github.com/google/guetzli
@@ -104,44 +115,69 @@ func main() {
 		extList    = flag.Args()[2:]
 	)
 
+	// default ext is only for jpg and png
+	if len(extList) == 0 {
+		extList = []string{".jpg", ".png"}
+	}
+
 	// only for one image
 	if !isDir(inputPath) {
-		err := guetzliCompressImage(inputPath, outputPath, float32(*flagQuality))
+		err := guetzliCompressImage(inputPath, outputPath, float32(*flagQuality), nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 		return
 	}
 
+	// parse regexp
+	if *flagRegexp == "" {
+		*flagRegexp = ".*"
+	}
+	rePath, err := regexp.Compile(*flagRegexp)
+	if err != nil {
+		log.Fatalf("invalid regexp: %q", *flagRegexp)
+		return
+	}
+
 	// walk dir
+	var seemMap = make(map[string]bool)
 	filepath.Walk(inputDir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
 
-		if !matchExtList(path, ".png", ".jpg", ".jpeg") {
+		if !matchExtList(path, supportFormatExtList...) {
 			return nil // support format
 		}
 		if !matchExtList(path, extList...) {
-			return nil // selected format
+			return nil // unselected format
+		}
+		if !rePath.MatchString(path) {
+			return nil // unselected path
 		}
 
-		outputPath := func() string {
+		inputPath = goodAbsPath(path)
+		outputPath = func() string {
 			relPath, err := filepath.Rel(inputDir, path)
 			if err != nil {
-				log.Printf("%s is invalid path, skiped", path)
+				panic(err)
 			}
 			newpath := filepath.Join(outputDir, relPath)
 			if !matchExtList(newpath, ".jpg", ".jpeg") {
-				newpath += ".jpg"
+				newpath = strings.TrimSuffix(newpath, filepath.Ext(newpath)) + ".jpg"
 			}
+			newpath = goodAbsPath(newpath)
 			return newpath
 		}()
 
 		os.MkdirAll(filepath.Dir(outputPath), 0777)
 		timeUsed, err := func() (time.Duration, error) {
 			s := time.Now()
-			err := guetzliCompressImage(path, outputPath, float32(*flagQuality))
+
+			seemMap[outputPath] = true
+			err := guetzliCompressImage(path, outputPath, float32(*flagQuality), seemMap)
+			seemMap[inputPath] = true
+
 			timeUsed := time.Now().Sub(s)
 			return timeUsed, err
 		}()
@@ -153,7 +189,6 @@ func main() {
 		fmt.Println(path, "ok,", timeUsed)
 		return nil
 	})
-
 }
 
 func matchExtList(name string, extList ...string) bool {
@@ -170,7 +205,10 @@ func matchExtList(name string, extList ...string) bool {
 	return false
 }
 
-func guetzliCompressImage(inputFilename, outputFilename string, quality float32) error {
+func guetzliCompressImage(inputFilename, outputFilename string, quality float32, seen map[string]bool) error {
+	if seen != nil && seen[inputFilename] {
+		return nil // skip
+	}
 	fin, err := os.Open(inputFilename)
 	if err != nil {
 		return fmt.Errorf("open %q failed, err = %v", inputFilename, err)
@@ -198,4 +236,11 @@ func isDir(path string) bool {
 		return true
 	}
 	return false
+}
+
+func goodAbsPath(path string) string {
+	if abspath, err := filepath.Abs(path); err == nil {
+		path = abspath
+	}
+	return filepath.ToSlash(filepath.Clean(path))
 }

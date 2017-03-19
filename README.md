@@ -43,7 +43,7 @@ Example:
     guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
     guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 
-Note: Input image only support jpeg/png format.
+Note: Default image only support jpeg/png format.
 
 See https://godoc.org/github.com/chai2010/guetzli-go See
 https://github.com/google/guetzli
