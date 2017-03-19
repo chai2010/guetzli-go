@@ -29,6 +29,11 @@
 //
 // Note: Supported formats: .gif, .jpeg, .jpg, .png
 //
+// Build more image format support (use "all_formats" tag):
+//
+//	go get   -tags="all_formats" github.com/chai2010/guetzli-go/apps/guetzli
+//	go build -tags="all_formats"
+//
 // See https://godoc.org/github.com/chai2010/guetzli-go
 //
 // See https://github.com/google/guetzli

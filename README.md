@@ -53,6 +53,14 @@ https://github.com/google/guetzli
 Report bugs to <chaishushan{AT}gmail.com>.
 ```
 
+Build more image format support(use "all_formats" tag):
+
+```
+go get   -tags="all_formats" github.com/chai2010/guetzli-go/apps/guetzli
+go build -tags="all_formats"
+```
+
+See [main_all_formats.go](apps/guetzli/main_all_formats.go)
 
 Benchmark
 =========
