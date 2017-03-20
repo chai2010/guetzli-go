@@ -56,7 +56,7 @@ static void grayToRGBVector(std::vector<uint8_t>* rgb, const uint8_t* pix, int w
 
 static void rgbToRGBVector(std::vector<uint8_t>* rgb, const uint8_t* pix, int w, int h, int stride) {
 	rgb->resize(w*h*3);
-	if(stride == 0) {
+	if(stride == 0 || stride == w*3) {
 		memcpy(rgb->data(), pix, rgb->size());
 		return;
 	}
