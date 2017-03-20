@@ -4,6 +4,8 @@
 
 #include "./capi.h"
 
+#include <string.h>
+
 #include <string>
 #include <vector>
 #include <memory>
