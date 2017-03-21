@@ -137,7 +137,7 @@ func main() {
 
 	// only for one image
 	if !isDir(inputPath) {
-		err := guetzliCompressImage(inputPath, outputPath, float32(*flagQuality), nil)
+		err := guetzliCompressImage(inputPath, outputPath, float32(*flagQuality))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -185,13 +185,19 @@ func main() {
 			return newpath
 		}()
 
+		if _, ok := seemMap[inputPath]; ok {
+			return nil // skip
+		}
+
 		os.MkdirAll(filepath.Dir(outputPath), 0777)
 		timeUsed, err := func() (time.Duration, error) {
 			s := time.Now()
 
-			seemMap[outputPath] = true
-			err := guetzliCompressImage(path, outputPath, float32(*flagQuality), seemMap)
-			seemMap[inputPath] = true
+			err := guetzliCompressImage(path, outputPath, float32(*flagQuality))
+			if err == nil {
+				seemMap[inputPath] = true
+				seemMap[outputPath] = true
+			}
 
 			timeUsed := time.Now().Sub(s)
 			return timeUsed, err
@@ -220,10 +226,7 @@ func matchExtList(name string, extList ...string) bool {
 	return false
 }
 
-func guetzliCompressImage(inputFilename, outputFilename string, quality float32, seen map[string]bool) error {
-	if seen != nil && seen[inputFilename] {
-		return nil // skip
-	}
+func guetzliCompressImage(inputFilename, outputFilename string, quality float32) error {
 	fin, err := os.Open(inputFilename)
 	if err != nil {
 		return fmt.Errorf("open %q failed, err = %v", inputFilename, err)
