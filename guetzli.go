@@ -31,7 +31,7 @@ const (
 var errEncodeFailed = errors.New("guetzli: encode failed!")
 
 type Options struct {
-	Quality float32 // 84 <= quality <= 110
+	Quality int // 84 <= quality <= 110
 }
 
 // MemP Image Spec (Native Endian), see https://github.com/chai2010/image.
@@ -47,22 +47,22 @@ type MemP interface {
 	Stride() int
 }
 
-func EncodeImage(m image.Image, quality float32) (data []byte, ok bool) {
+func EncodeImage(m image.Image, quality int) (data []byte, ok bool) {
 	return encodeImage(m, quality)
 }
 
-func EncodeGray(m *image.Gray, quality float32) (data []byte, ok bool) {
+func EncodeGray(m *image.Gray, quality int) (data []byte, ok bool) {
 	return encodeGray(m.Pix, m.Bounds().Dx(), m.Bounds().Dy(), m.Stride, quality)
 }
-func EncodeRGBA(m *image.RGBA, quality float32) (data []byte, ok bool) {
+func EncodeRGBA(m *image.RGBA, quality int) (data []byte, ok bool) {
 	return encodeRGBA(m.Pix, m.Bounds().Dx(), m.Bounds().Dy(), m.Stride, quality)
 }
-func EncodeRGB(pix []byte, w, h, stride int, quality float32) (data []byte, ok bool) {
+func EncodeRGB(pix []byte, w, h, stride int, quality int) (data []byte, ok bool) {
 	return encodeRGB(pix, w, h, stride, quality)
 }
 
 func Encode(w io.Writer, m image.Image, o *Options) error {
-	var quality = float32(DefaultQuality)
+	var quality = DefaultQuality
 	if o != nil {
 		quality = o.Quality
 	}
@@ -79,7 +79,7 @@ func Encode(w io.Writer, m image.Image, o *Options) error {
 }
 
 func Save(name string, m image.Image, o *Options) error {
-	var quality = float32(DefaultQuality)
+	var quality = DefaultQuality
 	if o != nil {
 		quality = o.Quality
 	}
@@ -92,7 +92,7 @@ func Save(name string, m image.Image, o *Options) error {
 	return ioutil.WriteFile(name, data, 0666)
 }
 
-func encodeImage(m image.Image, quality float32) (data []byte, ok bool) {
+func encodeImage(m image.Image, quality int) (data []byte, ok bool) {
 	b := m.Bounds()
 	if memp, ok := m.(MemP); ok {
 		switch {

@@ -18,7 +18,7 @@ package guetzli
 import "C"
 import "unsafe"
 
-func encodeGray(pix []byte, w, h, stride int, quality float32) (data []byte, ok bool) {
+func encodeGray(pix []byte, w, h, stride int, quality int) (data []byte, ok bool) {
 	p := C.guetzliEncodeGray(
 		(*C.uint8_t)(unsafe.Pointer(&pix[0])),
 		C.int(w), C.int(h), C.int(stride),
@@ -35,7 +35,7 @@ func encodeGray(pix []byte, w, h, stride int, quality float32) (data []byte, ok 
 	return data, true
 }
 
-func encodeRGB(pix []byte, w, h, stride int, quality float32) (data []byte, ok bool) {
+func encodeRGB(pix []byte, w, h, stride int, quality int) (data []byte, ok bool) {
 	p := C.guetzliEncodeRGB(
 		(*C.uint8_t)(unsafe.Pointer(&pix[0])),
 		C.int(w), C.int(h), C.int(stride),
@@ -52,7 +52,7 @@ func encodeRGB(pix []byte, w, h, stride int, quality float32) (data []byte, ok b
 	return data, true
 }
 
-func encodeRGBA(pix []byte, w, h, stride int, quality float32) (data []byte, ok bool) {
+func encodeRGBA(pix []byte, w, h, stride int, quality int) (data []byte, ok bool) {
 	p := C.guetzliEncodeRGBA(
 		(*C.uint8_t)(unsafe.Pointer(&pix[0])),
 		C.int(w), C.int(h), C.int(stride),

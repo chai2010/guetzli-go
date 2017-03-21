@@ -9,7 +9,7 @@
 //	guetzli [flags] input_filename output_filename
 //	guetzli [flags] input_dir output_dir [ext...]
 //
-//	  -quality float
+//	  -quality int
 //	        Expressed as a JPEG quality value(>=84 and <= 110). (default 84)
 //	  -regexp string
 //	        regexp for base filename.
@@ -63,7 +63,7 @@ import (
 const Version = "1.0"
 
 var (
-	flagQuality = flag.Float64("quality", guetzli.DefaultQuality, "Expressed as a JPEG quality value(>=84 and <= 110).")
+	flagQuality = flag.Int("quality", guetzli.DefaultQuality, "Expressed as a JPEG quality value(>=84 and <= 110).")
 	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
 	flagVersion = flag.Bool("version", false, "Show version and exit.")
 )
@@ -144,7 +144,7 @@ func main() {
 
 	// only for one image
 	if !isDir(inputPath) {
-		err := guetzliCompressImage(inputPath, outputPath, float32(*flagQuality))
+		err := guetzliCompressImage(inputPath, outputPath, *flagQuality)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -200,7 +200,7 @@ func main() {
 		timeUsed, err := func() (time.Duration, error) {
 			s := time.Now()
 
-			err := guetzliCompressImage(path, outputPath, float32(*flagQuality))
+			err := guetzliCompressImage(path, outputPath, *flagQuality)
 			if err == nil {
 				seemMap[inputPath] = true
 				seemMap[outputPath] = true
@@ -233,7 +233,7 @@ func matchExtList(name string, extList ...string) bool {
 	return false
 }
 
-func guetzliCompressImage(inputFilename, outputFilename string, quality float32) error {
+func guetzliCompressImage(inputFilename, outputFilename string, quality int) error {
 	fin, err := os.Open(inputFilename)
 	if err != nil {
 		return fmt.Errorf("open %q failed, err = %v", inputFilename, err)
