@@ -28,7 +28,14 @@ const (
 	DefaultQuality = 84
 )
 
-var errEncodeFailed = errors.New("guetzli: encode failed!")
+var (
+	errEncodeFailed   = errors.New("guetzli: encode failed!")
+	errInvalidQuality = errors.New("guetzli: invalid quality (must >=84 and <= 110)")
+)
+
+func isInvalidQuality(quality int) bool {
+	return quality < MinQuality || quality > MaxQuality
+}
 
 type Options struct {
 	Quality int // 84 <= quality <= 110
@@ -48,16 +55,28 @@ type MemP interface {
 }
 
 func EncodeImage(m image.Image, quality int) (data []byte, ok bool) {
+	if isInvalidQuality(quality) {
+		return nil, false
+	}
 	return encodeImage(m, quality)
 }
 
 func EncodeGray(m *image.Gray, quality int) (data []byte, ok bool) {
+	if isInvalidQuality(quality) {
+		return nil, false
+	}
 	return encodeGray(m.Pix, m.Bounds().Dx(), m.Bounds().Dy(), m.Stride, quality)
 }
 func EncodeRGBA(m *image.RGBA, quality int) (data []byte, ok bool) {
+	if isInvalidQuality(quality) {
+		return nil, false
+	}
 	return encodeRGBA(m.Pix, m.Bounds().Dx(), m.Bounds().Dy(), m.Stride, quality)
 }
 func EncodeRGB(pix []byte, w, h, stride int, quality int) (data []byte, ok bool) {
+	if isInvalidQuality(quality) {
+		return nil, false
+	}
 	return encodeRGB(pix, w, h, stride, quality)
 }
 
@@ -65,6 +84,9 @@ func Encode(w io.Writer, m image.Image, o *Options) error {
 	var quality = DefaultQuality
 	if o != nil {
 		quality = o.Quality
+	}
+	if isInvalidQuality(quality) {
+		return errInvalidQuality
 	}
 
 	data, ok := encodeImage(m, quality)
@@ -82,6 +104,9 @@ func Save(name string, m image.Image, o *Options) error {
 	var quality = DefaultQuality
 	if o != nil {
 		quality = o.Quality
+	}
+	if isInvalidQuality(quality) {
+		return errInvalidQuality
 	}
 
 	data, ok := encodeImage(m, quality)
