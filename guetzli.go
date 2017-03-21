@@ -11,16 +11,27 @@ import (
 	"image"
 	"image/color"
 	"io"
-	"os"
+	"io/ioutil"
 	"reflect"
 )
 
-const DefaultQuality = 75
+// Guetzli algorithm is beneficial only for this quality or higher.
+// If you work around it and lower the quality, you'll only
+// waste your time generating average JPEGs, without Guetzli improvement.
+//
+// If you need even smaller files and can tolerate bigger distortions,
+// MozJPEG is a better choice for quality < 84.
+const (
+	MinQuality = 84
+	MaxQuality = 110
+
+	DefaultQuality = 84
+)
 
 var errEncodeFailed = errors.New("guetzli: encode failed!")
 
 type Options struct {
-	Quality float32
+	Quality float32 // 84 <= quality <= 110
 }
 
 // MemP Image Spec (Native Endian), see https://github.com/chai2010/image.
@@ -68,12 +79,17 @@ func Encode(w io.Writer, m image.Image, o *Options) error {
 }
 
 func Save(name string, m image.Image, o *Options) error {
-	f, err := os.Create(name)
-	if err != nil {
-		return err
+	var quality = float32(DefaultQuality)
+	if o != nil {
+		quality = o.Quality
 	}
-	defer f.Close()
-	return Encode(f, m, o)
+
+	data, ok := encodeImage(m, quality)
+	if !ok {
+		return errEncodeFailed
+	}
+
+	return ioutil.WriteFile(name, data, 0666)
 }
 
 func encodeImage(m image.Image, quality float32) (data []byte, ok bool) {

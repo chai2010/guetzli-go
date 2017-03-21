@@ -28,7 +28,7 @@ Usage:
     guetzli [flags] input_dir output_dir [ext...]
 
       -quality float
-            Expressed as a JPEG quality value. (default 75)
+            Expressed as a JPEG quality value(>=84 and <= 110). (default 84)
       -regexp string
             regexp for base filename.
       -version

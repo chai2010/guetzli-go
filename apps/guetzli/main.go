@@ -10,7 +10,7 @@
 //	guetzli [flags] input_dir output_dir [ext...]
 //
 //	  -quality float
-//	        Expressed as a JPEG quality value. (default 75)
+//	        Expressed as a JPEG quality value(>=84 and <= 110). (default 84)
 //	  -regexp string
 //	        regexp for base filename.
 //	  -version
@@ -63,7 +63,7 @@ import (
 const Version = "1.0"
 
 var (
-	flagQuality = flag.Float64("quality", 75, "Expressed as a JPEG quality value.")
+	flagQuality = flag.Float64("quality", guetzli.DefaultQuality, "Expressed as a JPEG quality value(>=84 and <= 110).")
 	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
 	flagVersion = flag.Bool("version", false, "Show version and exit.")
 )
@@ -129,6 +129,13 @@ func main() {
 		outputDir  = flag.Arg(1)
 		extList    = flag.Args()[2:]
 	)
+
+	if *flagQuality < guetzli.MinQuality {
+		*flagQuality = guetzli.MinQuality
+	}
+	if *flagQuality > guetzli.MaxQuality {
+		*flagQuality = guetzli.MaxQuality
+	}
 
 	// default ext is only for jpg and png
 	if len(extList) == 0 {
