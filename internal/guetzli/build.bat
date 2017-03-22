@@ -6,6 +6,12 @@ setlocal
 
 cd %~dp0
 
+:: Setup VS2015
+if not "x%VS140COMNTOOLS%" == "x" (
+	echo Setup VS2015 Win64 ...
+	call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
+)
+
 mkdir zz_build_tmp
 cd    zz_build_tmp
 

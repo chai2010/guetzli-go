@@ -9,33 +9,37 @@ set(CMAKE_CXX_STANDARD 11)
 
 #------------------------------------------------------------------------------
 
+set(GUETZLI_ROOT
+	../guetzli-1.0.1
+)
+
 include_directories(AFTER
-	../guetzli-1.0
-	../guetzli-1.0/third_party/butteraugli
+	${GUETZLI_ROOT}
+	${GUETZLI_ROOT}/third_party/butteraugli
 )
 
 set(GUETZLI_SRC
-	../guetzli-1.0/guetzli/butteraugli_comparator.cc
-	../guetzli-1.0/guetzli/dct_double.cc
-	../guetzli-1.0/guetzli/debug_print.cc
-	../guetzli-1.0/guetzli/entropy_encode.cc
-	../guetzli-1.0/guetzli/fdct.cc
-	../guetzli-1.0/guetzli/gamma_correct.cc
-	../guetzli-1.0/guetzli/idct.cc
-	../guetzli-1.0/guetzli/jpeg_data.cc
-	../guetzli-1.0/guetzli/jpeg_data_decoder.cc
-	../guetzli-1.0/guetzli/jpeg_data_encoder.cc
-	../guetzli-1.0/guetzli/jpeg_data_reader.cc
-	../guetzli-1.0/guetzli/jpeg_data_writer.cc
-	../guetzli-1.0/guetzli/jpeg_huffman_decode.cc
-	../guetzli-1.0/guetzli/output_image.cc
-	../guetzli-1.0/guetzli/preprocess_downsample.cc
-	../guetzli-1.0/guetzli/processor.cc
-	../guetzli-1.0/guetzli/quality.cc
-	../guetzli-1.0/guetzli/quantize.cc
-	../guetzli-1.0/guetzli/score.cc
+	${GUETZLI_ROOT}/guetzli/butteraugli_comparator.cc
+	${GUETZLI_ROOT}/guetzli/dct_double.cc
+	${GUETZLI_ROOT}/guetzli/debug_print.cc
+	${GUETZLI_ROOT}/guetzli/entropy_encode.cc
+	${GUETZLI_ROOT}/guetzli/fdct.cc
+	${GUETZLI_ROOT}/guetzli/gamma_correct.cc
+	${GUETZLI_ROOT}/guetzli/idct.cc
+	${GUETZLI_ROOT}/guetzli/jpeg_data.cc
+	${GUETZLI_ROOT}/guetzli/jpeg_data_decoder.cc
+	${GUETZLI_ROOT}/guetzli/jpeg_data_encoder.cc
+	${GUETZLI_ROOT}/guetzli/jpeg_data_reader.cc
+	${GUETZLI_ROOT}/guetzli/jpeg_data_writer.cc
+	${GUETZLI_ROOT}/guetzli/jpeg_huffman_decode.cc
+	${GUETZLI_ROOT}/guetzli/output_image.cc
+	${GUETZLI_ROOT}/guetzli/preprocess_downsample.cc
+	${GUETZLI_ROOT}/guetzli/processor.cc
+	${GUETZLI_ROOT}/guetzli/quality.cc
+	${GUETZLI_ROOT}/guetzli/quantize.cc
+	${GUETZLI_ROOT}/guetzli/score.cc
 
-	../guetzli-1.0/third_party/butteraugli/butteraugli/butteraugli.cc
+	${GUETZLI_ROOT}/third_party/butteraugli/butteraugli/butteraugli.cc
 )
 
 #------------------------------------------------------------------------------
