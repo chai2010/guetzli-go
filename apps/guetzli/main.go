@@ -8,6 +8,7 @@
 //
 //	guetzli [flags] input_filename output_filename
 //	guetzli [flags] input_dir output_dir [ext...]
+//	# use '-' as the stdin/stdout filename
 //
 //	  -memlimit int
 //	        Memory limit in MB, lowest is 100MB. (default 6000)
@@ -27,6 +28,8 @@
 //	guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
 //	guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
 //
+//	cat lena.jpg | guetzli - - >new.jpg
+//
 // Note: Default image ext is: .jpeg .jpg .png
 //
 // Note: Supported formats: .gif, .jpeg, .jpg, .png
@@ -45,12 +48,14 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -96,6 +101,7 @@ func init() {
 
 Usage: guetzli [flags] input_filename output_filename
        guetzli [flags] input_dir output_dir [ext...]
+       # use '-' as the stdin/stdout filename
 `)
 		flag.PrintDefaults()
 		fmt.Printf(`
@@ -107,6 +113,8 @@ Example:
   guetzli [-quality=95] input_dir output_dir .png
   guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
   guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
+
+  cat lena.jpg | guetzli - - >new.jpg
 
 Note: Default image ext is: .jpeg .jpg .png
 
@@ -129,8 +137,8 @@ func main() {
 	}
 
 	if flag.NArg() < 2 {
-		fmt.Printf("guetzli-%s\n", Version)
-		os.Exit(0)
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	if *flagMemlimit < kLowestMemusageMB {
@@ -250,11 +258,21 @@ func matchExtList(name string, extList ...string) bool {
 }
 
 func guetzliCompressImage(inputFilename, outputFilename string, quality int) error {
-	fin, err := os.Open(inputFilename)
-	if err != nil {
-		return fmt.Errorf("open %q failed, err = %v", inputFilename, err)
+	var (
+		fin  *os.File
+		fout *os.File
+		err  error
+	)
+
+	if inputFilename == "-" {
+		inputFilename = "stdin"
+		fin = os.Stdin
+	} else {
+		if fin, err = os.Open(inputFilename); err != nil {
+			return fmt.Errorf("open %q failed, err = %v", inputFilename, err)
+		}
+		defer fin.Close()
 	}
-	defer fin.Close()
 
 	m, _, err := image.Decode(fin)
 	if err != nil {
@@ -266,7 +284,22 @@ func guetzliCompressImage(inputFilename, outputFilename string, quality int) err
 		return fmt.Errorf("Memory limit would be exceeded. Failing.")
 	}
 
-	err = guetzli.Save(outputFilename, m, &guetzli.Options{Quality: quality})
+	data, ok := guetzli.EncodeImage(m, quality)
+	if !ok {
+		return fmt.Errorf("encode %q failed", outputFilename)
+	}
+
+	if outputFilename == "-" {
+		outputFilename = "stdout"
+		fout = os.Stdout
+	} else {
+		if fout, err = os.Create(outputFilename); err != nil {
+			return fmt.Errorf("create %q failed, err = %v", outputFilename, err)
+		}
+		defer fout.Close()
+	}
+
+	_, err = io.Copy(fout, bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("save %q failed, err = %v", outputFilename, err)
 	}

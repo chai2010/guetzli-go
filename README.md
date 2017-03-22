@@ -26,6 +26,7 @@ Usage:
 
     guetzli [flags] input_filename output_filename
     guetzli [flags] input_dir output_dir [ext...]
+    # use '-' as the stdin/stdout filename
 
       -memlimit int
             Memory limit in MB, lowest is 100MB. (default 6000)
@@ -44,6 +45,8 @@ Example:
     guetzli [-quality=95] input_dir output_dir .png
     guetzli [-quality=95] input_dir output_dir .png .jpg .jpeg
     guetzli [-quality=95 -regexp="^\d+"] input_dir output_dir .png
+
+    cat lena.jpg | guetzli - - >new.jpg
 
 Note: Default image ext is: .jpeg .jpg .png
 
