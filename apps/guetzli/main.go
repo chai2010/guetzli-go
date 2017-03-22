@@ -9,6 +9,8 @@
 //	guetzli [flags] input_filename output_filename
 //	guetzli [flags] input_dir output_dir [ext...]
 //
+//	  -memlimit int
+//	        Memory limit in MB, lowest is 100MB. (default 6000)
 //	  -quality int
 //	        Expressed as a JPEG quality value(>=84 and <= 110). (default 95)
 //	  -regexp string
@@ -60,12 +62,21 @@ import (
 	"github.com/chai2010/guetzli-go"
 )
 
-const Version = "1.0"
+const Version = "1.0.1"
+
+// An upper estimate of memory usage of Guetzli. The bound is
+// max(kLowerMemusaeMB * 1<<20, pixel_count * kBytesPerPixel)
+const (
+	kBytesPerPixel     = 300
+	kLowestMemusageMB  = 100  // in MB
+	kDefaultMemlimitMB = 6000 // in MB
+)
 
 var (
-	flagQuality = flag.Int("quality", guetzli.DefaultQuality, "Expressed as a JPEG quality value(>=84 and <= 110).")
-	flagRegexp  = flag.String("regexp", "", "regexp for base filename.")
-	flagVersion = flag.Bool("version", false, "Show version and exit.")
+	flagQuality  = flag.Int("quality", guetzli.DefaultQuality, "Expressed as a JPEG quality value(>=84 and <= 110).")
+	flagMemlimit = flag.Int("memlimit", kDefaultMemlimitMB, "Memory limit in MB, lowest is 100MB.")
+	flagRegexp   = flag.String("regexp", "", "regexp for base filename.")
+	flagVersion  = flag.Bool("version", false, "Show version and exit.")
 )
 
 var supportFormatExtList = []string{
@@ -120,6 +131,11 @@ func main() {
 	if flag.NArg() < 2 {
 		fmt.Printf("guetzli-%s\n", Version)
 		os.Exit(0)
+	}
+
+	if *flagMemlimit < kLowestMemusageMB {
+		fmt.Fprintf(os.Stderr, "Memory limit would be exceeded. Failing.")
+		os.Exit(1)
 	}
 
 	var (
@@ -243,6 +259,11 @@ func guetzliCompressImage(inputFilename, outputFilename string, quality int) err
 	m, _, err := image.Decode(fin)
 	if err != nil {
 		return fmt.Errorf("decode %q failed, err = %v", inputFilename, err)
+	}
+
+	pixels := m.Bounds().Dx() * m.Bounds().Dy()
+	if pixels*kBytesPerPixel/(1<<20) > *flagMemlimit || *flagMemlimit < kLowestMemusageMB {
+		return fmt.Errorf("Memory limit would be exceeded. Failing.")
 	}
 
 	err = guetzli.Save(outputFilename, m, &guetzli.Options{Quality: quality})

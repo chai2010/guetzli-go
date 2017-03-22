@@ -27,6 +27,8 @@ Usage:
     guetzli [flags] input_filename output_filename
     guetzli [flags] input_dir output_dir [ext...]
 
+      -memlimit int
+            Memory limit in MB, lowest is 100MB. (default 6000)
       -quality int
             Expressed as a JPEG quality value(>=84 and <= 110). (default 95)
       -regexp string
