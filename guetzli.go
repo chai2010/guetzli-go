@@ -25,7 +25,8 @@ const (
 	MinQuality = 84
 	MaxQuality = 110
 
-	DefaultQuality = 84
+	// Equal to google/guetzli's default quality
+	DefaultQuality = 95
 )
 
 var (

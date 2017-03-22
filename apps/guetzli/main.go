@@ -10,7 +10,7 @@
 //	guetzli [flags] input_dir output_dir [ext...]
 //
 //	  -quality int
-//	        Expressed as a JPEG quality value(>=84 and <= 110). (default 84)
+//	        Expressed as a JPEG quality value(>=84 and <= 110). (default 95)
 //	  -regexp string
 //	        regexp for base filename.
 //	  -version
