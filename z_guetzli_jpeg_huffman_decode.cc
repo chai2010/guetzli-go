@@ -2,4 +2,4 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "./internal/guetzli-1.0/guetzli/jpeg_huffman_decode.cc"
+#include "./internal/guetzli-1.0.1/guetzli/jpeg_huffman_decode.cc"

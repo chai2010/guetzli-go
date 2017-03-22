@@ -6,8 +6,8 @@ package guetzli
 
 /*
 #cgo CXXFLAGS: -std=c++11
-#cgo CPPFLAGS: -I./internal/guetzli-1.0
-#cgo CPPFLAGS: -I./internal/guetzli-1.0/third_party/butteraugli
+#cgo CPPFLAGS: -I./internal/guetzli-1.0.1
+#cgo CPPFLAGS: -I./internal/guetzli-1.0.1/third_party/butteraugli
 
 #cgo windows LDFLAGS: -Wl,--allow-multiple-definition
 
