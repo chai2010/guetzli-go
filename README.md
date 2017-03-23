@@ -141,7 +141,7 @@ func jpegEncode(m image.Image, quality int) []byte {
 	return buf.Bytes()
 }
 
-func guetzliEncode(m image.Image, quality float32) []byte {
+func guetzliEncode(m image.Image, quality int) []byte {
 	var buf bytes.Buffer
 	err := guetzli.Encode(&buf, m, &guetzli.Options{Quality: quality})
 	if err != nil {
